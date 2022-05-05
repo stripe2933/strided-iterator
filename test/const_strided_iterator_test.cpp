@@ -66,8 +66,6 @@ TEST(const_strided_iterator_with_stride_template_parameter, ForLoopOutputTest){
     }
     EXPECT_THAT(v3, ::testing::ElementsAreArray({ 2, 4, 6, 8, 10 }));
 
-    return;
-
     // with stride 4 (10 is not multiple of 4)
     std::vector<int> v4;
     for (const_strided_iterator<int, 4> it = v.cbegin(); it < v.cend(); ++it){
@@ -84,7 +82,7 @@ TEST(const_strided_iterator_with_stride_template_parameter, ForLoopOutputTest){
 
     // with stride -3, starts from the v.cend() - 2
     std::vector<int> v6;
-    for (const_strided_iterator<int, -2> it = v.cend() - 2; it > v.cbegin() - 1; ++it){
+    for (const_strided_iterator<int, -3> it = v.cend() - 2; it > v.cbegin() - 1; ++it){
         v6.push_back(*it);
     }
     EXPECT_THAT(v6, ::testing::ElementsAreArray({ 9, 6, 3 }));
@@ -122,8 +120,6 @@ TEST(const_strided_iterator_without_stride_template_parameter, ForLoopOutputTest
     }
     EXPECT_THAT(v3, ::testing::ElementsAreArray({ 2, 4, 6, 8, 10 }));
 
-    return;
-
     // with stride 4 (10 is not multiple of 4)
     std::vector<int> v4;
     for (const_strided_iterator<int> it { v.cbegin(), 4 }; it < v.cend(); ++it){
@@ -140,7 +136,7 @@ TEST(const_strided_iterator_without_stride_template_parameter, ForLoopOutputTest
 
     // with stride -3, starts from the v.cend() - 2
     std::vector<int> v6;
-    for (const_strided_iterator<int> it { v.cend() - 2, -2 }; it > v.cbegin() - 1; ++it){
+    for (const_strided_iterator<int> it { v.cend() - 2, -3 }; it > v.cbegin() - 1; ++it){
         v6.push_back(*it);
     }
     EXPECT_THAT(v6, ::testing::ElementsAreArray({ 9, 6, 3 }));
