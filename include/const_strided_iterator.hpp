@@ -114,7 +114,7 @@ public:
     const_strided_iterator(difference_type stride = 1) noexcept : _ptr { }, _stride { stride } { }
     const_strided_iterator(pointer ptr, difference_type stride = 1) noexcept : _ptr { ptr }, _stride { stride } { }
     const_strided_iterator(std::__wrap_iter<pointer> wrap_iter, difference_type stride = 1) noexcept : _ptr { wrap_iter.base() }, _stride { stride } { }
-    const_strided_iterator(const self_type& source) noexcept : _ptr { source._ptr }, _stride { source.stride } { }
+    const_strided_iterator(const self_type& source) noexcept : _ptr { source._ptr }, _stride { source._stride } { }
 
     self_type& operator=(const self_type& iterator) noexcept { _ptr = iterator._ptr; return *this; }
     self_type& operator=(pointer ptr) noexcept { _ptr = ptr; return *this; }

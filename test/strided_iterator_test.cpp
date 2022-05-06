@@ -12,6 +12,9 @@
 #include <strided_iterator.hpp>
 
 #include <vector>
+#include <algorithm>
+#include <numeric>
+#include <array>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -115,6 +118,60 @@ TEST(strided_iterator_with_stride_template_parameter, ForLoopInputTest){
     EXPECT_THAT(v, ::testing::ElementsAreArray({ 0, 1, 0, 0, 2, 0, 0, 3, 0, 0 }));
 }
 
+TEST(strided_iterator_with_stride_template_parameter, STLCompatibilityTest){
+    std::vector<int> v { 1, -2, 3, -4, 5, -6, 7, -8, 9, -10 };
+
+    // Accumulation
+
+    int sum = std::accumulate<strided_iterator<int, 1>, int>(v.begin(), v.end(), 0);
+    EXPECT_EQ(sum, -5);
+
+    int odd_sum = std::accumulate<strided_iterator<int, 2>, int>(v.begin(), v.end(), 0);
+    EXPECT_EQ(odd_sum, 25);
+
+    /*
+        BE AWARE!
+
+        The last-first must be the multiple of Stride, because STL iterates the iterator with != (not eq) condition, i.e.
+        for (auto it = first; it != last; ++it){ // <- compare with != operator
+            // use *it
+        }
+    */
+    int even_sum = std::accumulate<strided_iterator<int, 2>, int>(v.begin() + 1, v.end() + 1, 0);
+    EXPECT_EQ(even_sum, -30);
+
+    // Sorting
+
+    std::sort<strided_iterator<int, 2>>(v.begin(), v.end(), std::greater<int>());
+    std::sort<strided_iterator<int, 2>>(v.begin() + 1, v.end() + 1);
+    EXPECT_THAT(v, ::testing::ElementsAreArray({ 9, -10, 7, -8, 5, -6, 3, -4, 1, -2 }));
+
+    // Matrix Multiplication
+    
+    std::array<double, 2*3> matrix2x3 { 
+        2, 1, 4, 
+        0, 1, 1,
+    };
+    std::array<double, 3*4> matrix3x4 { 
+        6, 3, -1, 0, 
+        1, 1, 0, 4, 
+        -2, 5, 0, 2,
+    };
+    std::array<double, 2*4> multiple;
+    for (std::size_t i = 0; i < multiple.size(); ++i){
+        std::size_t row = i / 4, column = i % 4;
+        multiple[i] = std::inner_product<strided_iterator<double, 1>, strided_iterator<double, 4>>(
+            matrix2x3.begin() + 3 * row, matrix2x3.begin() + 3 * (row + 1),
+            matrix3x4.begin() + column, 
+            0
+        );
+    }
+    EXPECT_THAT(multiple, ::testing::ElementsAreArray({ 
+        5, 27, -2, 12, 
+        -1, 6, 0, 6,
+    }));
+}
+
 TEST(strided_iterator_without_stride_template_parameter, ForLoopOutputTest){
     std::vector<int> v { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     
@@ -186,4 +243,58 @@ TEST(strided_iterator_without_stride_template_parameter, ForLoopInputTest){
         *it = i;
     }
     EXPECT_THAT(v, ::testing::ElementsAreArray({ 0, 1, 0, 0, 2, 0, 0, 3, 0, 0 }));
+}
+
+TEST(strided_iterator_without_stride_template_parameter, STLCompatibilityTest){
+    std::vector<int> v { 1, -2, 3, -4, 5, -6, 7, -8, 9, -10 };
+
+    // Accumulation
+
+    int sum = std::accumulate(strided_iterator<int>{ v.begin(), 1 }, strided_iterator<int>{ v.end(), 1 }, 0);
+    EXPECT_EQ(sum, -5);
+
+    int odd_sum = std::accumulate(strided_iterator<int>{ v.begin(), 2 }, strided_iterator<int>{ v.end(), 2 }, 0);
+    EXPECT_EQ(odd_sum, 25);
+
+    /*
+        BE AWARE!
+
+        The last-first must be the multiple of Stride, because STL iterates the iterator with != (not eq) condition, i.e.
+        for (auto it = first; it != last; ++it){ // <- compare with != operator
+            // use *it
+        }
+    */
+    int even_sum = std::accumulate(strided_iterator<int>{ v.begin() + 1, 2 }, strided_iterator<int>{ v.end() + 1, 2 }, 0);
+    EXPECT_EQ(even_sum, -30);
+
+    // Sorting
+
+    std::sort(strided_iterator<int>{ v.begin(), 2 }, strided_iterator<int>{ v.end(), 2 }, std::greater<int>());
+    std::sort(strided_iterator<int>{ v.begin() + 1, 2 }, strided_iterator<int>{ v.end() + 1, 2 });
+    EXPECT_THAT(v, ::testing::ElementsAreArray({ 9, -10, 7, -8, 5, -6, 3, -4, 1, -2 }));
+
+    // Matrix Multiplication
+    
+    std::array<double, 2*3> matrix2x3 { 
+        2, 1, 4, 
+        0, 1, 1,
+    };
+    std::array<double, 3*4> matrix3x4 { 
+        6, 3, -1, 0, 
+        1, 1, 0, 4, 
+        -2, 5, 0, 2,
+    };
+    std::array<double, 2*4> multiple;
+    for (std::size_t i = 0; i < multiple.size(); ++i){
+        std::size_t row = i / 4, column = i % 4;
+        multiple[i] = std::inner_product(
+            matrix2x3.begin() + 3 * row, matrix2x3.begin() + 3 * (row + 1),
+            strided_iterator<double>{ matrix3x4.begin() + column, 4 }, 
+            0
+        );
+    }
+    EXPECT_THAT(multiple, ::testing::ElementsAreArray({ 
+        5, 27, -2, 12, 
+        -1, 6, 0, 6,
+    }));
 }
