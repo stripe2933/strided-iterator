@@ -139,9 +139,11 @@ public:
     
     // Difference
     friend difference_type operator-(const self_type& left, const self_type& right) { 
+#ifndef NDEBUG
         if (left._stride != right._stride){
             throw std::runtime_error { "const_strided_iterator<Tp> subtract operation with different strides." };
         }
+#endif
         return (right._ptr - left._ptr) / left._stride;
     }
 

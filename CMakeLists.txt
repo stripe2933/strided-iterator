@@ -5,7 +5,7 @@ add_subdirectory(test)
 
 add_library(strided-iterator INTERFACE)
 target_include_directories(strided-iterator INTERFACE ${CMAKE_SOURCE_DIR}/include)
-target_compile_options(strided-iterator INTERFACE -Wall -Werror)
+target_compile_options(strided-iterator INTERFACE -Wall -Werror -DNDEBUG) # add -DNDEBUG flag to compile release code
 target_compile_features(strided-iterator INTERFACE cxx_std_20)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
